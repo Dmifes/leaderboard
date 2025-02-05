@@ -28,33 +28,34 @@ function App() {
 
   const [textData, setTextData] = useState(() => {
     return players.map(player =>
-        `${player.name}\t${player.scores.join('\t')}\t${player.position || ''}\t${player.discount || ''}`
+        `${player.name}    ${player.scores.join('  ')}`
     ).join('\n');
   });
 
   const [columnCount, setColumnCount] = useState(() => {
     const firstLine = textData.split('\n')[0];
-    return firstLine.split('\t').length - 3;
+    const scoreCount = firstLine.split(/\s+/).filter(Boolean).length - 1;
+    return scoreCount;
   });
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextData(e.target.value);
+    const newText = e.target.value;
+    setTextData(newText);
+    
     try {
-      const lines = e.target.value.split('\n');
+      const lines = newText.split('\n');
       const firstLine = lines[0];
-      const columns = firstLine.split('\t').length - 3;
-      setColumnCount(columns);
+      // Split by one or more spaces
+      const firstLineItems = firstLine.split(/\s+/).filter(Boolean);
+      const scoreCount = firstLineItems.length - 1;
+      setColumnCount(scoreCount);
 
       const newPlayers = lines.map(line => {
-        const [name, ...rest] = line.split('\t');
-        const scores = rest.slice(0, columns).map(Number);
-        const position = rest[columns];
-        const discount = rest[columns + 1];
+        const items = line.split(/\s+/).filter(Boolean);
+        const [name, ...scores] = items;
         return {
           name,
-          scores,
-          position,
-          discount
+          scores: scores.map(Number)
         };
       });
       setPlayers(newPlayers);
@@ -62,7 +63,6 @@ function App() {
       // Continue editing if parsing fails
     }
   };
-
   const handleEdit = (field: string, value: string, index?: number) => {
     if (index !== undefined) {
       const newPlayers = [...players];
@@ -281,8 +281,8 @@ const TrophyIcon = ({ position }: { position: number }) => {
                   <div className="w-8 text-center">№</div>
                   <div className="w-24 ml-2"></div>
                   <div className="flex ml-auto">
-                    {Array.from({length: columnCount}, (_, i) => (
-                        <div key={i} className="w-12 text-center">{i + 1}</div>
+                    {Array.from({ length: columnCount }, (_, i) => (
+                      <div key={i} className="w-12 text-center">{i + 1}</div>
                     ))}
                     <div className="w-16 text-center">Total</div>
                   </div>
