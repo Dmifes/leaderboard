@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, Medal, Award } from 'lucide-react';
+import { Trophy, Award } from 'lucide-react';
 
 interface Player {
   name: string;
