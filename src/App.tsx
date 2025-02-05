@@ -7,7 +7,6 @@ interface Player {
   position?: string;
   discount?: string;
 }
-
 function App() {
   const [title, setTitle] = useState("MafiaCartel");
   const [date, setDate] = useState("Класика 04.02.25");
@@ -15,23 +14,26 @@ function App() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [players, setPlayers] = useState<Player[]>([
-    { name: "Альф", score: "4.0", position: "1", discount: "100%*" },
-    { name: "СексШоп", score: "3.8", position: "2", discount: "50%*" },
-    { name: "Котик", score: "3.6", position: "3", discount: "25%*" },
-    { name: "Макларен", score: "3.4", position: "4" },
-    { name: "Изи", score: "3.0", position: "5" },
-    { name: "ПокаТак", score: "3.0", position: "6" },
-    { name: "Шляпа", score: "2.8", position: "7" },
-    { name: "Яблоко", score: "2.6", position: "8" },
-    { name: "Жан", score: "2.6", position: "9" },
-    { name: "Сахарок", score: "2.0", position: "10" }
+    { name: "Альф", scores: [1.2, 1.4, 1.4, 0], position: "1", discount: "100%*" },
+    { name: "СексШоп", scores: [1, 1, 1.8, 0], position: "2", discount: "50%*" },
+    { name: "Котик", scores: [0, 1, 1, 1.6], position: "3", discount: "25%*" },
+    { name: "Макларен", scores: [1, 1, 1.4, 0], position: "4" },
+    { name: "Изи", scores: [1, 1, 1, 0], position: "5" },
+    { name: "ПокаТак", scores: [0, 0, 1.4, 1.6], position: "6" },
+    { name: "Шляпа", scores: [0, 1, 0, 1.8], position: "7" },
+    { name: "Яблоко", scores: [1, -0.3, 1.2, 0.7], position: "8" },
+    { name: "Жан", scores: [1.4, 0, 1.2, 0], position: "9" },
+    { name: "Сахарок", scores: [1, 1, 0, 0], position: "10" }
   ]);
 
   const handleEdit = (field: string, value: string, index?: number) => {
     if (index !== undefined) {
       const newPlayers = [...players];
       if (field === 'name') newPlayers[index].name = value;
-      if (field === 'score') newPlayers[index].score = value;
+      if (field.startsWith('score')) {
+        const scoreIndex = parseInt(field.replace('score', ''));
+        newPlayers[index].scores[scoreIndex] = parseFloat(value) || 0;
+      }
       if (field === 'position') newPlayers[index].position = value;
       if (field === 'discount' && newPlayers[index].discount) {
         newPlayers[index].discount = value.replace(/^-+/, '');
@@ -44,7 +46,6 @@ function App() {
     setEditingField(null);
     setEditValue("");
   };
-
   const EditableField = ({ 
     value, 
     field, 
@@ -93,11 +94,11 @@ function App() {
 const TrophyIcon = ({ position }: { position: number }) => {
   switch (position) {
     case 1:
-      return <Trophy className="w-14 h-14 text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" />;
+      return <Trophy className="w-20 h-20 text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" />;
     case 2:
-      return <Award className="w-11 h-11 text-slate-300" />;
+      return <Award className="w-16 h-16 text-slate-300" />;
     case 3:
-      return <Award className="w-8 h-8 text-amber-500" />;
+      return <Award className="w-14 h-14 text-amber-500" />;
     default:
       return null;
   }
@@ -106,7 +107,7 @@ const TrophyIcon = ({ position }: { position: number }) => {
       <div
           className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
         <div
-            className="w-80 bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
+            className="w-[450px] bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
           {/* Header with decorative elements */}
           <div className="relative text-center mb-6">
             <div
@@ -126,7 +127,7 @@ const TrophyIcon = ({ position }: { position: number }) => {
           </div>
 
           {/* Top 3 Podium */}
-          <div className="flex justify-between items-end mb-6 px-2">
+          <div className="flex justify-center items-end mb-6 gap-9">
             {/* Second Place */}
             <div className="text-center">
               <div className="flex justify-center mb-2">
@@ -212,35 +213,56 @@ const TrophyIcon = ({ position }: { position: number }) => {
             </div>
           </div>
 
-          {/* Players list 4-10 */}
-          <div className="space-y-2">
-            {players.slice(3).map((player, index) => (
-                <div key={index + 3}
-                     className="flex items-center justify-between p-3 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <EditableField
-                        value={player.position || `${index + 4}`}
+            {/* Players list with scores */}
+            <div className="space-y-2 max-w-full">
+              {/* Header row */}
+              <div className="flex items-center p-3 bg-amber-500/20 rounded-lg">
+                <div className="w-8 text-center">№</div>
+                <div className="w-24 ml-2"></div>
+                <div className="flex ml-auto">
+                  <div className="w-12 text-center">1</div>
+                  <div className="w-12 text-center">2</div>
+                  <div className="w-12 text-center">3</div>
+                  <div className="w-12 text-center">4</div>
+                  <div className="w-16 text-center">Total</div>
+                </div>
+              </div>
+            
+              {players.map((player, index) => {
+                const total = player.scores.reduce((sum, score) => sum + score, 0)
+                
+                return (
+                  <div key={index} className="flex items-center p-3 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
+                    <div className="w-8 text-center">
+                      <EditableField
+                        value={player.position || `${index + 1}`}
                         field="position"
-                        index={index + 3}
+                        index={index}
                         className="text-amber-500/80"
-                    />
-                    <EditableField
+                      />
+                    </div>
+                    <div className="w-24 ml-2">
+                      <EditableField
                         value={player.name}
                         field="name"
-                        index={index + 3}
+                        index={index}
                         className="text-gray-300"
-                    />
+                      />
+                    </div>
+                    <div className="flex ml-auto">
+                      {player.scores.map((score, scoreIndex) => (
+                        <div key={scoreIndex} className="w-12 text-center text-gray-400">
+                          {score.toFixed(1)}
+                        </div>
+                      ))}
+                      <div className="w-16 text-center text-amber-500 font-bold">
+                        {total.toFixed(1)}
+                      </div>
+                    </div>
                   </div>
-                  <EditableField
-                      value={player.score}
-                      field="score"
-                      index={index + 3}
-                      className="text-gray-400"
-                  />
-                </div>
-            ))}
-          </div>
-
+                )
+              })}
+            </div>
 
           <div className="mt-4 text-center">
             <EditableField
