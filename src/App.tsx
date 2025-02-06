@@ -23,11 +23,11 @@ export default function App() {
       { name: "СексШоп", scores: [1, 1, 1.8, 0], position: "2", discount: "50%*" },
       { name: "Котик", scores: [0, 1, 1, 1.6], position: "3", discount: "25%*" },
       { name: "Макларен", scores: [1, 1, 1.4, 0], position: "4" },
-      { name: "Изи", scores: [1, 1, 1, 0], position: "5" },
-      { name: "ПокаТак", scores: [0, 0, 1.4, 1.6], position: "6" },
+      { name: "Изи", scores: [1, 1, 1, 0], position: "5-6" },
+      { name: "ПокаТак", scores: [0, 0, 1.4, 1.6], position: "5-6" },
       { name: "Шляпа", scores: [0, 1, 0, 1.8], position: "7" },
-      { name: "Яблоко", scores: [1, -0.3, 1.2, 0.7], position: "8" },
-      { name: "Жан", scores: [1.4, 0, 1.2, 0], position: "9" },
+      { name: "Яблоко", scores: [1, -0.3, 1.2, 0.7], position: "8-9" },
+      { name: "Жан", scores: [1.4, 0, 1.2, 0], position: "8-9" },
       { name: "Сахарок", scores: [1, 1, 0, 0], position: "10" }
     ];
 
@@ -174,13 +174,45 @@ export default function App() {
           return totalB - totalA;
         });
 
-        setPlayers(sortedPlayers);
+        const groups: Player[][] = [];
+        let currentGroup: Player[] = [sortedPlayers[0]];
+        
+        for (let i = 1; i < sortedPlayers.length; i++) {
+          const currentTotal = sortedPlayers[i].scores.reduce((sum, score) => sum + score, 0);
+          const prevTotal = sortedPlayers[i-1].scores.reduce((sum, score) => sum + score, 0);
+          
+          if (currentTotal === prevTotal) {
+            currentGroup.push(sortedPlayers[i]);
+          } else {
+            groups.push(currentGroup);
+            currentGroup = [sortedPlayers[i]];
+          }
+        }
+        groups.push(currentGroup);
+
+        let currentPosition = 1;
+        const playersWithPositions = groups.flatMap(group => {
+          const position = group.length === 1 
+            ? String(currentPosition)
+            : `${currentPosition}-${currentPosition + group.length - 1}`;
+          
+          const result = group.map(player => ({
+            ...player,
+            position
+          }));
+          
+          currentPosition += group.length;
+          return result;
+        });
+        
+        setPlayers(playersWithPositions);
       }
       setParseError(null);
     } catch (error) {
       setParseError("Неправильний формат тексту");
     }
-  }, []);  return (      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
+  }, []);  return (
+      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
         <div className="flex gap-4">
           {/* Text Editor Panel */}
           <div
