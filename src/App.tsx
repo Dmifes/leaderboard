@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import * as htmlToImage from 'html-to-image';
 import { Trophy, Award } from 'lucide-react';
 
 interface Player {
@@ -42,6 +43,29 @@ export default function App() {
       const dateText = `Дата: ${gameState.date}\n`;
       return dateText + players.map(player => `${player.name}    ${player.scores.join('  ')}`).join('\n');
     });
+    
+  const downloadAsPng = useCallback(() => {
+    const leaderboardElement = document.getElementById('leaderboard');
+    if (leaderboardElement) {
+      htmlToImage
+        .toPng(leaderboardElement, {
+          quality: 1.0,
+          backgroundColor: 'transparent',
+          pixelRatio: 2
+        })
+        .then((dataUrl) => {
+          const link = document.createElement('a');
+          link.download = `${gameState.title}-${gameState.date}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch((error) => {
+          console.log('Error generating image:', error);
+        });
+    }
+  }, [gameState.title, gameState.date]);
 
   const handleEdit = useCallback((field: string, value: string, index?: number) => {
     if (index !== undefined) {
@@ -218,32 +242,39 @@ export default function App() {
     } catch (error) {
       setParseError("Неправильний формат тексту");
     }
-  }, []);  return (      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
-        <div className="flex gap-4">
+  }, []);  return (
+      <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2 md:p-4 overflow-x-hidden">
+        <div className="flex flex-col md:flex-row gap-4 w-full max-w-[850px]">
           {/* Text Editor Panel */}
           <div
-              className="w-[400px] bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
+              className="w-full md:w-[400px] bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
   <textarea
-      className="w-full h-[600px] bg-transparent text-amber-500 font-mono text-sm p-2 border border-amber-500/30 rounded focus:outline-none focus:border-amber-500"
+      className="w-full h-[300px] md:h-[600px] bg-transparent text-amber-500 font-mono text-sm p-2 border border-amber-500/30 rounded focus:outline-none focus:border-amber-500"
       value={textData}
       onChange={handleTextChange}
-  />
-            {parseError && (
-                <div className="mt-2 text-red-500 text-sm font-mono">
-                  {parseError}
-                </div>
-            )}
+  /> {parseError && (
+              <div className="mt-2 text-red-500 text-sm font-mono">
+                {parseError}
+              </div>
+          )}
             <button
                 onClick={() => setShowMiddleColumns(!showMiddleColumns)}
                 className="mt-4 w-full text-amber-500 text-sm border border-amber-500/30 rounded px-3 py-1 hover:bg-amber-500/20 transition-colors"
             >
               {showMiddleColumns ? 'Приховати проміжні бали' : 'Показати проміжні бали'}
             </button>
+            <button
+                onClick={downloadAsPng}
+                className="mt-4 w-full text-amber-500 text-sm border border-amber-500/30 rounded px-3 py-1 hover:bg-amber-500/20 transition-colors"
+            >
+              Завантажити як png
+            </button>
           </div>
 
           {/* Leaderboard Panel */}
 
-          <div className={`${showMiddleColumns ? 'w-[450px]' : 'w-[300px]'} bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg`}>
+          <div id="leaderboard"
+               className={`${showMiddleColumns ? 'w-full md:w-[450px]' : 'w-full md:w-[300px]'} bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-amber-500/30 shadow-lg`}>
             {/* Header */}
             <div className="relative text-center mb-6">
               <div
@@ -251,12 +282,12 @@ export default function App() {
               <EditableField
                   value={gameState.title}
                   field="title"
-                  className="text-4xl font-black tracking-tighter bg-gradient-to-r from-red-500 via-amber-800/90 to-red-500 bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] transform hover:scale-105 transition-transform font-cinzel py-2 italic"
+                  className="text-4xl font-black tracking-tighter bg-gradient-to-r from-red-500 via-amber-800/90 to-red-500 bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] transform hover:scale-105 transition-transform py-2 italic"
               />
               <EditableField
                   value={gameState.date}
                   field="date"
-                  className="text-amber-400/80 text-sm font-cinzel font-bold italic"
+                  className="text-amber-400/80 text-sm font-bold italic"
               />
               <div
                   className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-600/50 to-transparent"/>
