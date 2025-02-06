@@ -110,7 +110,6 @@ export default function App() {
         </div>
     );
   }, [editingField, editValue, handleEdit]);
-
   const TrophyIcon = useCallback(({position}: { position: number }) => {
     const icons = {
       1: <Trophy className="w-20 h-20 text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"/>,
@@ -120,42 +119,78 @@ export default function App() {
     return icons[position as keyof typeof icons] || null;
   }, []);
 
+  const [parseError, setParseError] = useState<string | null>(null);
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setTextData(newText);
 
     try {
-      const newPlayers = newText.split('\n').map(line => {
-        const items = line.split(/\s+/).filter(Boolean);
-        const [name, ...scores] = items;
+      const newPlayers = newText.split('\n').filter(line => line.trim()).map(line => {
+        const cleanLine = line.replace(/^\d+\.?\s*/, '').split(/\s*=\s*/)[0].trim();
+        
+        const firstNumberIndex = cleanLine.search(/[-\d]/);
+        const name = firstNumberIndex > -1 
+          ? cleanLine.slice(0, firstNumberIndex).trim() 
+          : cleanLine.trim();
+        
+        const scoresText = cleanLine.slice(firstNumberIndex);
+        const tokens = scoresText.split(/\s+/).filter(token => /[0-9-]/.test(token));
+        
+        const scores: number[] = [];
+        for (let i = 0; i < tokens.length; i++) {
+          if (tokens[i] === '-') {
+            const nextNum = Number(tokens[i + 1].replace(',', '.'));
+            scores.push(-nextNum);
+            i++;
+          } else if (tokens[i] === '+') {
+            continue;
+          } else {
+            // Clean the token of any invisible characters before parsing
+            const cleanToken = tokens[i].replace(/[^\d,-]/g, '');
+            scores.push(Number(cleanToken.replace(',', '.')));
+          }
+        }
+
         return {
           name,
-          scores: scores.map(Number)
+          scores
         };
-      });
-      // Sort players by total score before setting state
-      const sortedPlayers = newPlayers.sort((a, b) => {
-        const totalA = a.scores.reduce((sum, score) => sum + score, 0);
-        const totalB = b.scores.reduce((sum, score) => sum + score, 0);
-        return totalB - totalA;
-      });
-      setPlayers(sortedPlayers);
+      }).filter(player => player.name && player.scores.length > 0);
+
+      if (newPlayers.length > 0) {
+        const maxScores = Math.max(...newPlayers.map(p => p.scores.length));
+        const normalizedPlayers = newPlayers.map(player => ({
+          ...player,
+          scores: [...player.scores, ...Array(maxScores - player.scores.length).fill(0)]
+        }));
+
+        const sortedPlayers = normalizedPlayers.sort((a, b) => {
+          const totalA = a.scores.reduce((sum, score) => sum + score, 0);
+          const totalB = b.scores.reduce((sum, score) => sum + score, 0);
+          return totalB - totalA;
+        });
+
+        setPlayers(sortedPlayers);
+      }
+      setParseError(null);
     } catch (error) {
-      console.error('Failed to parse text data:', error);
+      setParseError("Неправильний формат тексту");
     }
-  }, []);
-  return (
-      <div
-          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
+  }, []);  return (      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
         <div className="flex gap-4">
           {/* Text Editor Panel */}
           <div
               className="w-[400px] bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
-          <textarea
-              className="w-full h-[600px] bg-transparent text-amber-500 font-mono text-sm p-2 border border-amber-500/30 rounded focus:outline-none focus:border-amber-500"
-              value={textData}
-              onChange={handleTextChange}
-          />
+  <textarea
+      className="w-full h-[600px] bg-transparent text-amber-500 font-mono text-sm p-2 border border-amber-500/30 rounded focus:outline-none focus:border-amber-500"
+      value={textData}
+      onChange={handleTextChange}
+  />
+            {parseError && (
+                <div className="mt-2 text-red-500 text-sm font-mono">
+                  {parseError}
+                </div>
+            )}
           </div>
 
           {/* Leaderboard Panel */}
@@ -181,81 +216,83 @@ export default function App() {
 
             {/* Top 3 Podium */}
             <div className="flex justify-center items-end mb-6 gap-9">
-              {/* Second Place */}
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <TrophyIcon position={2}/>
+              {players.length >= 2 && (
+                <div className="text-center">
+                  <div className="flex justify-center mb-2">
+                    <TrophyIcon position={2}/>
+                  </div>
+                  <EditableField
+                      value={players[1].name}
+                      field="name"
+                      index={1}
+                      className="text-gray-300 font-bold text-sm"
+                  />
+                  <div className="text-gray-300 font-bold">
+                    {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                  </div>
+                  {players[1].discount && (
+                      <EditableField
+                          value={players[1].discount}
+                          field="discount"
+                          index={1}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
+                  )}
                 </div>
-                <EditableField
-                    value={players[1].name}
-                    field="name"
-                    index={1}
-                    className="text-gray-300 font-bold text-sm"
-                />
-                <div className="text-gray-300 font-bold">
-                  {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                </div>
-                {players[1].discount && (
-                    <EditableField
-                        value={players[1].discount}
-                        field="discount"
-                        index={1}
-                        className="text-green-400 text-sm font-bold"
-                        prefix="-"
-                    />
-                )}
-              </div>
+              )}
 
-              {/* First Place */}
-              <div className="text-center -mt-4">
-                <div className="flex justify-center mb-2">
-                  <TrophyIcon position={1}/>
+              {players.length >= 1 && (
+                <div className="text-center -mt-4">
+                  <div className="flex justify-center mb-2">
+                    <TrophyIcon position={1}/>
+                  </div>
+                  <EditableField
+                      value={players[0].name}
+                      field="name"
+                      index={0}
+                      className="text-amber-400 font-bold text-sm"
+                  />
+                  <div className="text-amber-400 font-bold">
+                    {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                  </div>
+                  {players[0].discount && (
+                      <EditableField
+                          value={players[0].discount}
+                          field="discount"
+                          index={0}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
+                  )}
                 </div>
-                <EditableField
-                    value={players[0].name}
-                    field="name"
-                    index={0}
-                    className="text-amber-400 font-bold text-sm"
-                />
-                <div className="text-amber-400 font-bold">
-                  {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                </div>
-                {players[0].discount && (
-                    <EditableField
-                        value={players[0].discount}
-                        field="discount"
-                        index={0}
-                        className="text-green-400 text-sm font-bold"
-                        prefix="-"
-                    />
-                )}
-              </div>
+              )}
 
-              {/* Third Place */}
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <TrophyIcon position={3}/>
+              {players.length >= 3 && (
+                <div className="text-center">
+                  <div className="flex justify-center mb-2">
+                    <TrophyIcon position={3}/>
+                  </div>
+                  <EditableField
+                      value={players[2].name}
+                      field="name"
+                      index={2}
+                      className="text-amber-500 font-bold text-sm"
+                  />
+                  <div className="text-amber-500 font-bold">
+                    {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                  </div>
+                  {players[2].discount && (
+                      <EditableField
+                          value={players[2].discount}
+                          field="discount"
+                          index={2}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
+                  )}
                 </div>
-                <EditableField
-                    value={players[2].name}
-                    field="name"
-                    index={2}
-                    className="text-amber-500 font-bold text-sm"
-                />
-                <div className="text-amber-500 font-bold">
-                  {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                </div>
-                {players[2].discount && (
-                    <EditableField
-                        value={players[2].discount}
-                        field="discount"
-                        index={2}
-                        className="text-green-400 text-sm font-bold"
-                        prefix="-"
-                    />
-                )}
-              </div>
-            </div>
+              )}            </div>
 
             {/* Players list with scores */}
             <div className="space-y-2 max-w-full">
