@@ -125,7 +125,7 @@ export default function App() {
     setTextData(newText);
 
     try {
-      const newPlayers = newText.split('\n').filter(line => line.trim()).map(line => {
+      const newPlayers = newText.split('\n').filter(line => line.trim()).map((line, index) => {
         const cleanLine = line.replace(/^\d+\.?\s*/, '').split(/\s*=\s*/)[0].trim();
         
         const firstNumberIndex = cleanLine.search(/[-\d]/);
@@ -139,21 +139,25 @@ export default function App() {
         const scores: number[] = [];
         for (let i = 0; i < tokens.length; i++) {
           if (tokens[i] === '-') {
-            const nextNum = Number(tokens[i + 1].replace(',', '.'));
+            const nextNum = Number(tokens[i + 1].replace(',', '.').replace(/[^\d.]/g, ''));
             scores.push(-nextNum);
             i++;
           } else if (tokens[i] === '+') {
             continue;
           } else {
-            // Clean the token of any invisible characters before parsing
-            const cleanToken = tokens[i].replace(/[^\d,-]/g, '');
-            scores.push(Number(cleanToken.replace(',', '.')));
+            const cleanToken = tokens[i].replace(/[^\d,.-]/g, '');
+            const normalizedToken = cleanToken.replace(',', '.');
+            scores.push(Number(normalizedToken));
           }
         }
 
+        const discounts = ['100%*', '50%*', '25%*'];
+        const discount = index < 3 ? discounts[index] : undefined;
+
         return {
           name,
-          scores
+          scores,
+          discount
         };
       }).filter(player => player.name && player.scores.length > 0);
 
