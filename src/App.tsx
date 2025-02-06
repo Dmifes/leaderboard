@@ -58,7 +58,12 @@ export default function App() {
         if (field === 'discount') {
           newPlayers[index].discount = value.replace(/^-+/, '');
         }
-        return newPlayers.sort((a, b) => calculateTotal(b.scores) - calculateTotal(a.scores));
+        // Sort players by total score
+        return newPlayers.sort((a, b) => {
+          const totalA = a.scores.reduce((sum, score) => sum + score, 0);
+          const totalB = b.scores.reduce((sum, score) => sum + score, 0);
+          return totalB - totalA;
+        });
       });
     } else {
       setGameState(prev => ({...prev, [field]: value}));
@@ -66,7 +71,6 @@ export default function App() {
     setEditingField(null);
     setEditValue("");
   }, []);
-
   const EditableField = useCallback(({
                                        value,
                                        field,
@@ -129,12 +133,17 @@ export default function App() {
           scores: scores.map(Number)
         };
       });
-      setPlayers(newPlayers);
+      // Sort players by total score before setting state
+      const sortedPlayers = newPlayers.sort((a, b) => {
+        const totalA = a.scores.reduce((sum, score) => sum + score, 0);
+        const totalB = b.scores.reduce((sum, score) => sum + score, 0);
+        return totalB - totalA;
+      });
+      setPlayers(sortedPlayers);
     } catch (error) {
       console.error('Failed to parse text data:', error);
     }
   }, []);
-
   return (
       <div
           className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
