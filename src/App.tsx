@@ -6,14 +6,14 @@ interface Player {
   name: string;
   scores: number[];
   position?: string;
-  discount?: string;
 }
 
 export default function App() {
   const [gameState, setGameState] = useState({
-    title: "MafiaCartel",
+    title: "Mafia «Cartel»",
     date: "Класика 04.02.25",
-    footnote: "* - знижка на наступну гру"
+    footnote: "* - знижка на наступну гру",
+    discounts: ["100%*", "50%*", "25%*"]
   });
 
   const calculateTotal = (scores: number[]) => scores.reduce((sum, score) => sum + score, 0);
@@ -69,24 +69,28 @@ export default function App() {
 
   const handleEdit = useCallback((field: string, value: string, index?: number) => {
     if (index !== undefined) {
-      setPlayers(prev => {
-        const newPlayers = [...prev];
-        if (field === 'name') newPlayers[index].name = value;
-        if (field.startsWith('score')) {
-          const scoreIndex = parseInt(field.replace('score', ''));
-          newPlayers[index].scores[scoreIndex] = parseFloat(value) || 0;
-        }
-        if (field === 'position') newPlayers[index].position = value;
-        if (field === 'discount') {
-          newPlayers[index].discount = value.replace(/^-+/, '');
-        }
-        // Sort players by total score
-        return newPlayers.sort((a, b) => {
-          const totalA = a.scores.reduce((sum, score) => sum + score, 0);
-          const totalB = b.scores.reduce((sum, score) => sum + score, 0);
-          return totalB - totalA;
+      if (field === 'discount') {
+        setGameState(prev => ({
+          ...prev,
+          discounts: prev.discounts.map((d, i) => i === index ? value : d)
+        }));
+      } else {
+        setPlayers(prev => {
+          const newPlayers = [...prev];
+          if (field === 'name') newPlayers[index].name = value;
+          if (field.startsWith('score')) {
+            const scoreIndex = parseInt(field.replace('score', ''));
+            newPlayers[index].scores[scoreIndex] = parseFloat(value) || 0;
+          }
+          if (field === 'position') newPlayers[index].position = value;
+          // Sort players by total score
+          return newPlayers.sort((a, b) => {
+            const totalA = a.scores.reduce((sum, score) => sum + score, 0);
+            const totalB = b.scores.reduce((sum, score) => sum + score, 0);
+            return totalB - totalA;
+          });
         });
-      });
+      }
     } else {
       setGameState(prev => ({...prev, [field]: value}));
     }
@@ -309,16 +313,15 @@ export default function App() {
                     <div className="text-gray-300 font-bold">
                       {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
-                      <EditableField
-                          value="50%*"
-                          field="discount"
-                          index={1}
-                          className="text-green-400 text-sm font-bold"
-                          prefix="-"
-                      />
+                    <EditableField
+                        value={gameState.discounts[1]}
+                        field="discount"
+                        index={1}
+                        className="text-green-400 text-sm font-bold"
+                        prefix="-"
+                    />
                   </div>
               )}
-
               {players.length >= 1 && (
                   <div className="text-center -mt-4">
                     <div className="flex justify-center mb-2">
@@ -334,7 +337,7 @@ export default function App() {
                       {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
                       <EditableField
-                          value="100%*"
+                          value={gameState.discounts[0]}
                           field="discount"
                           index={0}
                           className="text-green-400 text-sm font-bold"
@@ -358,7 +361,7 @@ export default function App() {
                       {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
                       <EditableField
-                          value="25%*"
+                          value={gameState.discounts[2]}
                           field="discount"
                           index={2}
                           className="text-green-400 text-sm font-bold"
@@ -369,7 +372,9 @@ export default function App() {
             {/* Players list with scores */}
             <div className="space-y-1 max-w-full">
 
-              {players.map((player, index) => {
+                {players.map((player, index) => {
+                  // Skip first 3 players when middle columns are hidden
+                  if (!showMiddleColumns && index < 3) return null;
 
                 return (
                     <div key={index}
@@ -392,8 +397,13 @@ export default function App() {
                       </div>
                       <div className="flex ml-auto">
                         {showMiddleColumns && player.scores.map((score, scoreIndex) => (
-                            <div key={scoreIndex} className="w-10 text-center text-gray-400">
-                              {score.toFixed(1)}
+                            <div key={scoreIndex}>
+                              <EditableField
+                                  value={score.toFixed(1)}
+                                  field={"score" + scoreIndex}
+                                  index={index}
+                                  className="w-10 text-center text-gray-400"
+                              />
                             </div>
                         ))}
                         <div className={`${showMiddleColumns ? 'w-14' : 'w-20'} text-center text-amber-500 font-bold`}>
