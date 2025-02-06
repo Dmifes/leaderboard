@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { Trophy, Award } from 'lucide-react';
 
@@ -38,8 +38,16 @@ export default function App() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [showMiddleColumns, setShowMiddleColumns] = useState(true);
-
-    const [textData, setTextData] = useState(() => {
+  
+  const maxScoreColumns = Math.max(...players.map(p => p.scores.length));
+  
+  useEffect(() => {
+    if (maxScoreColumns <= 1) {
+      setShowMiddleColumns(false);
+    }
+  }, [maxScoreColumns]);
+  
+  const [textData, setTextData] = useState(() => {
       const dateText = `Дата: ${gameState.date}\n`;
       return dateText + players.map(player => `${player.name}    ${player.scores.join('  ')}`).join('\n');
     });
@@ -278,7 +286,7 @@ export default function App() {
           {/* Leaderboard Panel */}
 
           <div id="leaderboard"
-               className={`${showMiddleColumns ? 'w-full md:w-[450px]' : 'w-full md:w-[300px]'} bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-amber-500/30 shadow-lg`}>
+               className={`${showMiddleColumns ? 'w-full md:w-[550px]' : 'w-full md:w-[400px]'} h-fit bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-amber-500/30 shadow-lg`}>
             {/* Header */}
             <div className="relative text-center mb-6">
               <div
@@ -298,7 +306,7 @@ export default function App() {
             </div>
 
             {/* Top 3 Podium */}
-            <div className="flex justify-center items-end mb-6 gap-9">
+            <div className={`flex justify-center items-end mb-6 ${showMiddleColumns ? 'gap-9' : 'gap-4'}`}>
               {players.length >= 2 && (
                   <div className="text-center min-w-[80px]">
                     <div className="flex justify-center mb-2">
@@ -308,7 +316,7 @@ export default function App() {
                         value={players[1].name}
                         field="name"
                         index={1}
-                        className="text-gray-300 font-bold text-sm"
+                        className="text-gray-300 font-bold text-sm max-w-[100px] break-words"
                     />
                     <div className="text-gray-300 font-bold">
                       {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
@@ -331,7 +339,7 @@ export default function App() {
                         value={players[0].name}
                         field="name"
                         index={0}
-                        className="text-amber-400 font-bold text-sm"
+                        className="text-amber-400 font-bold text-sm max-w-[100px] break-words"
                     />
                     <div className="text-amber-400 font-bold">
                       {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
@@ -355,7 +363,7 @@ export default function App() {
                         value={players[2].name}
                         field="name"
                         index={2}
-                        className="text-amber-500 font-bold text-sm"
+                        className="text-amber-500 font-bold text-sm max-w-[100px] break-words"
                     />
                     <div className="text-amber-500 font-bold">
                       {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
@@ -387,12 +395,12 @@ export default function App() {
                             className="text-amber-500/80"
                         />
                       </div>
-                      <div className={`w-24 ml-2 ${!showMiddleColumns ? 'flex-grow' : ''}`}>
+                      <div className={`w-32 ml-2 ${!showMiddleColumns ? 'flex-grow' : ''}`}>
                         <EditableField
                             value={player.name}
                             field="name"
                             index={index}
-                            className="text-gray-300"
+                            className="text-gray-300 font-bold text-sm max-w-[240px] break-words"
                         />
                       </div>
                       <div className="flex ml-auto">
