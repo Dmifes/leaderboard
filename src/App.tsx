@@ -20,9 +20,9 @@ export default function App() {
 
   const [players, setPlayers] = useState<Player[]>(() => {
     const initialPlayers = [
-      { name: "Альф", scores: [1.2, 1.4, 1.4, 0], position: "1", discount: "100%*" },
-      { name: "СексШоп", scores: [1, 1, 1.8, 0], position: "2", discount: "50%*" },
-      { name: "Котик", scores: [0, 1, 1, 1.6], position: "3", discount: "25%*" },
+      { name: "Альф", scores: [1.2, 1.4, 1.4, 0], position: "1" },
+      { name: "СексШоп", scores: [1, 1, 1.8, 0], position: "2" },
+      { name: "Котик", scores: [0, 1, 1, 1.6], position: "3" },
       { name: "Макларен", scores: [1, 1, 1.4, 0], position: "4" },
       { name: "Изи", scores: [1, 1, 1, 0], position: "5-6" },
       { name: "ПокаТак", scores: [0, 0, 1.4, 1.6], position: "5-6" },
@@ -296,7 +296,7 @@ export default function App() {
             {/* Top 3 Podium */}
             <div className="flex justify-center items-end mb-6 gap-9">
               {players.length >= 2 && (
-                  <div className="text-center">
+                  <div className="text-center min-w-[80px]">
                     <div className="flex justify-center mb-2">
                       <TrophyIcon position={2}/>
                     </div>
@@ -309,15 +309,13 @@ export default function App() {
                     <div className="text-gray-300 font-bold">
                       {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
-                    {players[1].discount && (
-                        <EditableField
-                            value={players[1].discount}
-                            field="discount"
-                            index={1}
-                            className="text-green-400 text-sm font-bold"
-                            prefix="-"
-                        />
-                    )}
+                      <EditableField
+                          value="50%*"
+                          field="discount"
+                          index={1}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
                   </div>
               )}
 
@@ -335,15 +333,13 @@ export default function App() {
                     <div className="text-amber-400 font-bold">
                       {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
-                    {players[0].discount && (
-                        <EditableField
-                            value={players[0].discount}
-                            field="discount"
-                            index={0}
-                            className="text-green-400 text-sm font-bold"
-                            prefix="-"
-                        />
-                    )}
+                      <EditableField
+                          value="100%*"
+                          field="discount"
+                          index={0}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
                   </div>
               )}
 
@@ -361,15 +357,13 @@ export default function App() {
                     <div className="text-amber-500 font-bold">
                       {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                     </div>
-                    {players[2].discount && (
-                        <EditableField
-                            value={players[2].discount}
-                            field="discount"
-                            index={2}
-                            className="text-green-400 text-sm font-bold"
-                            prefix="-"
-                        />
-                    )}
+                      <EditableField
+                          value="25%*"
+                          field="discount"
+                          index={2}
+                          className="text-green-400 text-sm font-bold"
+                          prefix="-"
+                      />
                   </div>
               )}            </div>
             {/* Players list with scores */}
@@ -380,7 +374,7 @@ export default function App() {
                 return (
                     <div key={index}
                          className="flex items-center p-2 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
-                      <div className="w-8 text-center">
+                      <div className="w-12 min-w-[48px] text-center whitespace-nowrap overflow-hidden">
                         <EditableField
                             value={player.position || `${index + 1}`}
                             field="position"
