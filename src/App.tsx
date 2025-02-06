@@ -125,7 +125,16 @@ export default function App() {
     setTextData(newText);
 
     try {
-      const newPlayers = newText.split('\n').filter(line => line.trim()).map((line, index) => {
+      const lines = newText.split('\n').filter(line => line.trim());
+
+      // Check for "Дата: text" format in first line
+      if (lines[0] && lines[0].startsWith('Дата:')) {
+        const dateText = lines[0].replace('Дата:', '').trim();
+        setGameState(prev => ({ ...prev, date: dateText }));
+        lines.shift(); // Remove date line
+      }
+
+      const newPlayers = lines.map((line, index) => {
         const cleanLine = line.replace(/^\d+\.?\s*/, '').split(/\s*=\s*/)[0].trim();
         
         const firstNumberIndex = cleanLine.search(/[-\d]/);
@@ -211,8 +220,7 @@ export default function App() {
     } catch (error) {
       setParseError("Неправильний формат тексту");
     }
-  }, []);  return (
-      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
+  }, []);  return (      <div          className="min-h-screen bg-[url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
         <div className="flex gap-4">
           {/* Text Editor Panel */}
           <div
@@ -239,12 +247,12 @@ export default function App() {
               <EditableField
                   value={gameState.title}
                   field="title"
-                  className="text-amber-500 text-2xl font-cinzel font-bold py-2 italic"
+                  className="text-4xl font-black tracking-tighter bg-gradient-to-r from-red-500 via-amber-800/90 to-red-500 bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] transform hover:scale-105 transition-transform font-cinzel py-2 italic"
               />
               <EditableField
                   value={gameState.date}
                   field="date"
-                  className="text-amber-400/80 text-sm font-cinzel font-bold py-2 italic"
+                  className="text-amber-400/80 text-sm font-cinzel font-bold italic"
               />
               <div
                   className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-600/50 to-transparent"/>
@@ -329,27 +337,15 @@ export default function App() {
                   )}
                 </div>
               )}            </div>
-
             {/* Players list with scores */}
-            <div className="space-y-2 max-w-full">
-              {/* Header row */}
-              <div className="flex items-center p-3 bg-amber-500/20 rounded-lg">
-                <div className="w-8 text-center">№</div>
-                <div className="w-24 ml-2"></div>
-                <div className="flex ml-auto">
-                  {Array.from({length: columnCount}, (_, i) => (
-                      <div key={i} className="w-12 text-center">{i + 1}</div>
-                  ))}
-                  <div className="w-16 text-center">Total</div>
-                </div>
-              </div>
+            <div className="space-y-1 max-w-full">
 
               {players.map((player, index) => {
                 const total = player.scores.reduce((sum, score) => sum + score, 0);
 
                 return (
                     <div key={index}
-                         className="flex items-center p-3 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
+                          className="flex items-center p-2 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
                       <div className="w-8 text-center">
                         <EditableField
                             value={player.position || `${index + 1}`}
