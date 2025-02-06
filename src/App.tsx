@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Trophy, Award } from 'lucide-react';
 
 interface Player {
@@ -36,14 +36,12 @@ export default function App() {
 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [showMiddleColumns, setShowMiddleColumns] = useState(true);
 
-  const [textData, setTextData] = useState(() =>
-      players.map(player => `${player.name}    ${player.scores.join('  ')}`).join('\n')
-  );
-
-  const columnCount = useMemo(() => {
-    return players[0]?.scores.length || 4;
-  }, [players]);
+    const [textData, setTextData] = useState(() => {
+      const dateText = `Дата: ${gameState.date}\n`;
+      return dateText + players.map(player => `${player.name}    ${player.scores.join('  ')}`).join('\n');
+    });
 
   const handleEdit = useCallback((field: string, value: string, index?: number) => {
     if (index !== undefined) {
@@ -235,11 +233,17 @@ export default function App() {
                   {parseError}
                 </div>
             )}
+            <button
+                onClick={() => setShowMiddleColumns(!showMiddleColumns)}
+                className="mt-4 w-full text-amber-500 text-sm border border-amber-500/30 rounded px-3 py-1 hover:bg-amber-500/20 transition-colors"
+            >
+              {showMiddleColumns ? 'Приховати проміжні бали' : 'Показати проміжні бали'}
+            </button>
           </div>
 
           {/* Leaderboard Panel */}
-          <div
-              className="w-[450px] bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg">
+
+          <div className={`${showMiddleColumns ? 'w-[450px]' : 'w-[300px]'} bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-lg`}>
             {/* Header */}
             <div className="relative text-center mb-6">
               <div
@@ -261,91 +265,90 @@ export default function App() {
             {/* Top 3 Podium */}
             <div className="flex justify-center items-end mb-6 gap-9">
               {players.length >= 2 && (
-                <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <TrophyIcon position={2}/>
+                  <div className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <TrophyIcon position={2}/>
+                    </div>
+                    <EditableField
+                        value={players[1].name}
+                        field="name"
+                        index={1}
+                        className="text-gray-300 font-bold text-sm"
+                    />
+                    <div className="text-gray-300 font-bold">
+                      {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                    </div>
+                    {players[1].discount && (
+                        <EditableField
+                            value={players[1].discount}
+                            field="discount"
+                            index={1}
+                            className="text-green-400 text-sm font-bold"
+                            prefix="-"
+                        />
+                    )}
                   </div>
-                  <EditableField
-                      value={players[1].name}
-                      field="name"
-                      index={1}
-                      className="text-gray-300 font-bold text-sm"
-                  />
-                  <div className="text-gray-300 font-bold">
-                    {players[1].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                  </div>
-                  {players[1].discount && (
-                      <EditableField
-                          value={players[1].discount}
-                          field="discount"
-                          index={1}
-                          className="text-green-400 text-sm font-bold"
-                          prefix="-"
-                      />
-                  )}
-                </div>
               )}
 
               {players.length >= 1 && (
-                <div className="text-center -mt-4">
-                  <div className="flex justify-center mb-2">
-                    <TrophyIcon position={1}/>
+                  <div className="text-center -mt-4">
+                    <div className="flex justify-center mb-2">
+                      <TrophyIcon position={1}/>
+                    </div>
+                    <EditableField
+                        value={players[0].name}
+                        field="name"
+                        index={0}
+                        className="text-amber-400 font-bold text-sm"
+                    />
+                    <div className="text-amber-400 font-bold">
+                      {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                    </div>
+                    {players[0].discount && (
+                        <EditableField
+                            value={players[0].discount}
+                            field="discount"
+                            index={0}
+                            className="text-green-400 text-sm font-bold"
+                            prefix="-"
+                        />
+                    )}
                   </div>
-                  <EditableField
-                      value={players[0].name}
-                      field="name"
-                      index={0}
-                      className="text-amber-400 font-bold text-sm"
-                  />
-                  <div className="text-amber-400 font-bold">
-                    {players[0].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                  </div>
-                  {players[0].discount && (
-                      <EditableField
-                          value={players[0].discount}
-                          field="discount"
-                          index={0}
-                          className="text-green-400 text-sm font-bold"
-                          prefix="-"
-                      />
-                  )}
-                </div>
               )}
 
               {players.length >= 3 && (
-                <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <TrophyIcon position={3}/>
+                  <div className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <TrophyIcon position={3}/>
+                    </div>
+                    <EditableField
+                        value={players[2].name}
+                        field="name"
+                        index={2}
+                        className="text-amber-500 font-bold text-sm"
+                    />
+                    <div className="text-amber-500 font-bold">
+                      {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
+                    </div>
+                    {players[2].discount && (
+                        <EditableField
+                            value={players[2].discount}
+                            field="discount"
+                            index={2}
+                            className="text-green-400 text-sm font-bold"
+                            prefix="-"
+                        />
+                    )}
                   </div>
-                  <EditableField
-                      value={players[2].name}
-                      field="name"
-                      index={2}
-                      className="text-amber-500 font-bold text-sm"
-                  />
-                  <div className="text-amber-500 font-bold">
-                    {players[2].scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
-                  </div>
-                  {players[2].discount && (
-                      <EditableField
-                          value={players[2].discount}
-                          field="discount"
-                          index={2}
-                          className="text-green-400 text-sm font-bold"
-                          prefix="-"
-                      />
-                  )}
-                </div>
               )}            </div>
             {/* Players list with scores */}
             <div className="space-y-1 max-w-full">
 
               {players.map((player, index) => {
-                const total = player.scores.reduce((sum, score) => sum + score, 0);
 
                 return (
                     <div key={index}
-                          className="flex items-center p-2 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
+                         className="flex items-center p-2 bg-black/20 rounded-lg border border-amber-900/20 hover:border-amber-600/30 transition-colors">
                       <div className="w-8 text-center">
                         <EditableField
                             value={player.position || `${index + 1}`}
@@ -354,7 +357,7 @@ export default function App() {
                             className="text-amber-500/80"
                         />
                       </div>
-                      <div className="w-24 ml-2">
+                      <div className={`w-24 ml-2 ${!showMiddleColumns ? 'flex-grow' : ''}`}>
                         <EditableField
                             value={player.name}
                             field="name"
@@ -363,13 +366,13 @@ export default function App() {
                         />
                       </div>
                       <div className="flex ml-auto">
-                        {player.scores.map((score, scoreIndex) => (
-                            <div key={scoreIndex} className="w-12 text-center text-gray-400">
+                        {showMiddleColumns && player.scores.map((score, scoreIndex) => (
+                            <div key={scoreIndex} className="w-10 text-center text-gray-400">
                               {score.toFixed(1)}
                             </div>
                         ))}
-                        <div className="w-16 text-center text-amber-500 font-bold">
-                          {total.toFixed(1)}
+                        <div className={`${showMiddleColumns ? 'w-14' : 'w-20'} text-center text-amber-500 font-bold`}>
+                          {player.scores.reduce((sum, score) => sum + score, 0).toFixed(1)}
                         </div>
                       </div>
                     </div>
