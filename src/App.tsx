@@ -16,24 +16,7 @@ export default function App() {
     discounts: ["100%*", "50%*", "25%*"]
   });
 
-  const calculateTotal = (scores: number[]) => scores.reduce((sum, score) => sum + score, 0);
-
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const initialPlayers = [
-      { name: "Альф", scores: [1.2, 1.4, 1.4, 0], position: "1" },
-      { name: "СексШоп", scores: [1, 1, 1.8, 0], position: "2" },
-      { name: "Котик", scores: [0, 1, 1, 1.6], position: "3" },
-      { name: "Макларен", scores: [1, 1, 1.4, 0], position: "4" },
-      { name: "Изи", scores: [1, 1, 1, 0], position: "5-6" },
-      { name: "ПокаТак", scores: [0, 0, 1.4, 1.6], position: "5-6" },
-      { name: "Шляпа", scores: [0, 1, 0, 1.8], position: "7" },
-      { name: "Яблоко", scores: [1, -0.3, 1.2, 0.7], position: "8-9" },
-      { name: "Жан", scores: [1.4, 0, 1.2, 0], position: "8-9" },
-      { name: "Сахарок", scores: [1, 1, 0, 0], position: "10" }
-    ];
-
-    return initialPlayers.sort((a, b) => calculateTotal(b.scores) - calculateTotal(a.scores));
-  });
+  const [players, setPlayers] = useState<Player[]>([]);
 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -45,13 +28,28 @@ export default function App() {
     if (maxScoreColumns <= 1) {
       setShowMiddleColumns(false);
     }
+    const fakeEvent = {
+      target: { value: textData },
+      preventDefault: () => {},
+      persist: () => {}
+    } as React.ChangeEvent<HTMLTextAreaElement>;
+
+    handleTextChange(fakeEvent);
   }, [maxScoreColumns]);
   
-  const [textData, setTextData] = useState(() => {
-      const dateText = `Дата: ${gameState.date}\n`;
-      return dateText + players.map(player => `${player.name}    ${player.scores.join('  ')}`).join('\n');
-    });
-    
+  const [textData, setTextData] = useState(
+    `Дата: Класика 04.02.25
+Альф 1.2 1.4 1.4 0
+СексШоп 1 1 1.8 0
+Котик 0 1 1 1.6
+Макларен 1 1 1.4 0
+Изи 1 1 1 0
+ПокаТак 0 0 1.4 1.6
+Шляпа 0 1 0 1.8
+Яблоко 1 -0.3 1.2 0.7
+Жан 1.4 0 1.2 0
+Сахарок 1 1 0 0`
+  );    
   const downloadAsPng = useCallback(() => {
     const leaderboardElement = document.getElementById('leaderboard');
     if (leaderboardElement) {
@@ -188,11 +186,39 @@ export default function App() {
       const newPlayers = lines.map((line, index) => {
         const cleanLine = line.replace(/^\d+\.?\s*/, '').split(/\s*=\s*/)[0].trim();
         
-        const firstNumberIndex = cleanLine.search(/[-\d]/);
-        const name = firstNumberIndex > -1 
-          ? cleanLine.slice(0, firstNumberIndex).trim() 
+        const firstNumberIndex = cleanLine.search(/\s[-\d]/);
+        let name = firstNumberIndex > -1 
+          ? cleanLine.slice(0, firstNumberIndex+1).trim() 
           : cleanLine.trim();
-        
+
+        const nameEmojis: { [key: string]: string } = {
+          'сексшоп': '🍆',
+          'котик': '🐱',
+          'макларен': '🏎️',
+          'изи': '🥵',
+          'покатак': '🤷',
+          'шляпа': '🎩',
+          'яблоко': '🍏',
+          'жан': '🦫',
+          'сахарок': '🍬',
+          'офик': '🍽️',
+          'меджик': '💩',
+          'гейша': '👘',
+          'шеф': '👨‍🍳',
+          'лис': '🦊',
+          'серый лис': '🦊',
+          'кари': '🍛',
+          'босс': '💼',
+          'нотка': '🎵',
+          'банан': '🍌',
+          'бляха': '🪰',
+          'тигр': '🐯',
+          'лев': '🦁',
+          'джиган': '😎',
+          'альф': '👽',
+        };
+
+        const displayName = nameEmojis[name.toLowerCase()] ? `${name} ${nameEmojis[name.toLowerCase()]}` : name;        
         const scoresText = cleanLine.slice(firstNumberIndex);
         const tokens = scoresText.split(/\s+/).filter(token => /[0-9-]/.test(token));
         
@@ -215,7 +241,7 @@ export default function App() {
         const discount = index < 3 ? discounts[index] : undefined;
 
         return {
-          name,
+          name : displayName,
           scores,
           discount
         };
