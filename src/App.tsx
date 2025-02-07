@@ -55,6 +55,8 @@ export default function App() {
   const downloadAsPng = useCallback(() => {
     const leaderboardElement = document.getElementById('leaderboard');
     if (leaderboardElement) {
+      const originalBorderRadius = leaderboardElement.style.borderRadius;
+      leaderboardElement.style.borderRadius = '0';
       htmlToImage
         .toPng(leaderboardElement, {
           quality: 1.0,
@@ -71,10 +73,11 @@ export default function App() {
         })
         .catch((error) => {
           console.log('Error generating image:', error);
+        }).finally(() => {
+          leaderboardElement.style.borderRadius = originalBorderRadius;
         });
     }
   }, [gameState.title, gameState.date]);
-
   const handleEdit = useCallback((field: string, value: string, index?: number) => {
     if (index !== undefined) {
       if (field === 'discount') {
@@ -146,13 +149,27 @@ export default function App() {
   }, [editingField, editValue, handleEdit]);
   const TrophyIcon = useCallback(({position}: { position: number }) => {
     const icons = {
-      1: <Trophy className="w-20 h-20 text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"/>,
-      2: <Award className="w-16 h-16 text-slate-300"/>,
-      3: <Award className="w-14 h-14 text-amber-500"/>
+      1: (
+        <div className="relative">
+          <Trophy className="w-20 h-20 text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"/>
+          <span className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-yellow-400 font-bold text-2xl">1</span>
+        </div>
+      ),
+      2: (
+        <div className="relative">
+          <Award className="w-16 h-16 text-slate-300"/>
+          <span className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-slate-300 font-bold">2</span>
+        </div>
+      ),
+      3: (
+        <div className="relative">
+          <Award className="w-14 h-14 text-amber-500"/>
+          <span className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-amber-500 font-bold">3</span>
+        </div>
+      )
     };
     return icons[position as keyof typeof icons] || null;
   }, []);
-
   const [parseError, setParseError] = useState<string | null>(null);
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
