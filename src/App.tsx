@@ -216,6 +216,8 @@ export default function App() {
           'лев': '🦁',
           'джиган': '😎',
           'альф': '👽',
+          'мамут рахал': '👩❤️',
+          'карна': '🍷'
         };
 
         const displayName = nameEmojis[name.toLowerCase()] ? `${name} ${nameEmojis[name.toLowerCase()]}` : name;        
@@ -438,7 +440,7 @@ export default function App() {
                             className="text-amber-500/80"
                         />
                       </div>
-                      <div className={`w-32 ml-2 ${!showMiddleColumns ? 'flex-grow' : ''}`}>
+                      <div className={`w-40 ml-2 ${!showMiddleColumns ? 'flex-grow' : ''}`}>
                         <EditableField
                             value={player.name}
                             field="name"
