@@ -25,7 +25,7 @@ export default function App() {
   const maxScoreColumns = Math.max(...players.map(p => p.scores.length));
   
   useEffect(() => {
-    if (maxScoreColumns <= 1) {
+    if (maxScoreColumns == 1) {
       setShowMiddleColumns(false);
     }
     const fakeEvent = {
@@ -349,7 +349,7 @@ export default function App() {
             </div>
 
             {/* Top 3 Podium */}
-            <div className={`flex justify-center items-end mb-6 ${showMiddleColumns ? 'gap-9' : 'gap-4'}`}>
+            <div className={`flex justify-center items-end mb-6 gap-11`}>
               {players.length >= 2 && (
                   <div className="text-center min-w-[80px]">
                     <div className="flex justify-center mb-2">
