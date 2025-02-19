@@ -191,6 +191,10 @@ export default function App() {
           ? cleanLine.slice(0, firstNumberIndex+1).trim() 
           : cleanLine.trim();
 
+        if (name.toLowerCase() === 'маккларен') {
+          name = 'Макларен';
+        }
+
         const nameEmojis: { [key: string]: string } = {
           'сексшоп': '🍆',
           'котик': '🐱',
@@ -217,7 +221,12 @@ export default function App() {
           'джиган': '😎',
           'альф': '👽',
           'мамут рахал': '👩❤️',
-          'карна': '🍷'
+          'карна': '🍷',
+          'бойко': '🥊',
+          'мафия': '🥷🏻',
+          'мамка': '🤱',
+          'eva elfie': '🔞',
+          'алекса': '🤖'
         };
 
         const displayName = nameEmojis[name.toLowerCase()] ? `${name} ${nameEmojis[name.toLowerCase()]}` : name;        
