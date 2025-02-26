@@ -23,7 +23,34 @@ export default function App() {
   const [showMiddleColumns, setShowMiddleColumns] = useState(true);
   
   const maxScoreColumns = Math.max(...players.map(p => p.scores.length));
-  
+  const emojiImages = import.meta.glob('/src/assets/emojis/*.png', { eager: true });
+
+  function getEmojiUrl(emojiName: string): string | null {
+    const path = `/src/assets/emojis/${emojiName}.png`;
+    const module = emojiImages[path] as { default: string } | undefined;
+    return module?.default || null;
+  }
+
+  const PlayerName = ({ name }: { name: string }) => {
+    if (!name.includes('<img')) return name;
+
+    const [text, imgTag] = name.split('<img');
+    const matches = imgTag.match(/src="([^"]+)".*?alt="([^"]+)"/);
+
+    if (!matches) return name;
+
+    return (
+        <span className="flex items-center gap-1">
+      {text}
+          <img
+              src={matches[1]}
+              alt={matches[2]}
+              className="inline h-4 w-4"
+          />
+    </span>
+    );
+  };
+
   useEffect(() => {
     if (maxScoreColumns == 1) {
       setShowMiddleColumns(false);
@@ -59,7 +86,7 @@ export default function App() {
         .toPng(leaderboardElement, {
           quality: 1.0,
           backgroundColor: 'transparent',
-          pixelRatio: 2
+          pixelRatio: 4
         })
         .then((dataUrl) => {
           const link = document.createElement('a');
@@ -141,7 +168,7 @@ export default function App() {
               setEditValue(value);
             }}
         >
-          {prefix}{value}
+          {prefix}<PlayerName name={value} />
         </div>
     );
   }, [editingField, editValue, handleEdit]);
@@ -199,18 +226,19 @@ export default function App() {
           'сексшоп': '🍆',
           'котик': '🐱',
           'макларен': '🏎️',
+          'mclaren': '🏎️',
           'изи': '🥵',
           'покатак': '🤷',
           'шляпа': '🎩',
           'яблоко': '🍏',
           'жан': '🦫',
-          'сахарок': '🍬',
+          'сахарок': ':sugar:',
           'офик': '🍽️',
-          'меджик': '💩',
+          'меджик': ':shinypoop:',
           'гейша': '👘',
           'шеф': '👨‍🍳',
           'лис': '🦊',
-          'серый лис': '🦊',
+          'серый лис': ':greyfox:',
           'кари': '🍛',
           'босс': '💼',
           'нотка': '🎵',
@@ -218,19 +246,29 @@ export default function App() {
           'бляха': '🪰',
           'тигр': '🐯',
           'лев': '🦁',
-          'джиган': '😎',
-          'альф': '👽',
+          'джиган': ':djigan:',
+          'альф': ':alf:',
           'мамут рахал': '👩❤️',
           'карна': '🍷',
           'бойко': '🥊',
           'мафия': '🥷🏻',
           'мамка': '🤱',
           'eva elfie': '🔞',
+          'солянка': ':solyanka:',
           'алекса': '🤖'
         };
 
-        const displayName = nameEmojis[name.toLowerCase()] ? `${name} ${nameEmojis[name.toLowerCase()]}` : name;        
-        const scoresText = cleanLine.slice(firstNumberIndex);
+        const processEmoji = (emoji: string) => {
+          if (emoji.startsWith(':') && emoji.endsWith(':')) {
+            const emojiName = emoji.slice(1, -1);
+            const emojiUrl = getEmojiUrl(emojiName);
+            return emojiUrl ? `<img src="${emojiUrl}" class="inline h-5 w-5" alt="${emojiName}"/>` : emoji;
+          }
+          return emoji;
+        };
+        const displayName = nameEmojis[name.toLowerCase()]
+          ? `${name} ${processEmoji(nameEmojis[name.toLowerCase()])}`
+          : name;        const scoresText = cleanLine.slice(firstNumberIndex);
         const tokens = scoresText.split(/\s+/).filter(token => /[0-9-]/.test(token));
         
         const scores: number[] = [];
