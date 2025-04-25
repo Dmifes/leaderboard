@@ -269,6 +269,7 @@ export default function App() {
           'солянка': ':solyanka:',
           'алекса': '🤖',
           'mandarin': '🍊',
+          'мандарин': '🍊',
           'фостер': ':foster:',
           'foster': ':foster:'
         };
