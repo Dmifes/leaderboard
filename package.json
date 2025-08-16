@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "deploy-dev": "npm run build && gh-pages -d dist -o dev"
   },
   "dependencies": {
     "html-to-image": "^1.11.11",
