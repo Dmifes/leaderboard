@@ -271,7 +271,13 @@ export default function App() {
           'mandarin': '🍊',
           'мандарин': '🍊',
           'фостер': ':foster:',
-          'foster': ':foster:'
+          'foster': ':foster:',
+          'прокурорша': '⚖️',
+          'neo': '😎️',
+          'нео': '😎',
+          'красавчик': '✨',
+          'chip': '🐿',
+          'гость': '🫥'
         };
 
         const processEmoji = (emoji: string) => {
