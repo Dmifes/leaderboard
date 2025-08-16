@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "deploy-dev": "npm run build && gh-pages -d dist -b gh-pages --dest dev"
+    "deploy-dev": "vite build --base=/leaderboard/dev/ && gh-pages -d dist -b gh-pages --dest dev"
   },
   "dependencies": {
     "html-to-image": "^1.11.11",
